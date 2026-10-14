@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+# Environment & Secrets
+.env
+*.env
+.env.*
+
+# Databases & private user uploads
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+data/uploads/*
+!data/uploads/.gitkeep
+!data/.gitkeep
+
+# Hugging Face / Models cache
+models/
+huggingface/
+.cache/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+Desktop.ini
+.DS_Store

@@ -1,0 +1,6 @@
+equipment_id,device_model,department,calibration_cycles,operating_temperature_c
+1,CryoScanner Pro-9,Neurology,14,-80.5
+2,HyperPulse Defib-X,Emergency,28,22.0
+3,LaserTomography-V3,Ophthalmology,7,19.5
+4,NanoDialyzer-800,Nephrology,42,37.0
+5,GammaSterilizer-Z,Oncology,3,45.2
