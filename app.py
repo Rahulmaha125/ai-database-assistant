@@ -545,11 +545,23 @@ def init_session_state():
     if "upload_current_question" not in st.session_state:
         st.session_state.upload_current_question = ""
 
-    if "groq_api_key" not in st.session_state:
-        st.session_state.groq_api_key = GROQ_API_KEY
+    # Resolve secret directly from Streamlit secrets if present
+    secret_key = ""
+    secret_model = ""
+    try:
+        if hasattr(st, "secrets"):
+            if "GROQ_API_KEY" in st.secrets:
+                secret_key = str(st.secrets["GROQ_API_KEY"]).strip()
+            if "GROQ_MODEL" in st.secrets:
+                secret_model = str(st.secrets["GROQ_MODEL"]).strip()
+    except Exception:
+        pass
 
-    if "groq_model" not in st.session_state:
-        st.session_state.groq_model = DEFAULT_GROQ_MODEL
+    if "groq_api_key" not in st.session_state or not st.session_state.groq_api_key:
+        st.session_state.groq_api_key = secret_key or GROQ_API_KEY
+
+    if "groq_model" not in st.session_state or not st.session_state.groq_model:
+        st.session_state.groq_model = secret_model or DEFAULT_GROQ_MODEL
 
     if "llm_manager" not in st.session_state:
         st.session_state.llm_manager = LLMManager(
@@ -1240,11 +1252,24 @@ elif st.session_state.nav_view == "Settings":
             """
         )
         with st.form("groq_settings_form"):
+            has_configured_key = bool(st.session_state.groq_api_key)
+            if has_configured_key:
+                masked_key_display = f"gsk_••••••••••••{st.session_state.groq_api_key[-4:]}"
+                render_html(
+                    f"""
+                    <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="color: #15803D; font-size: 0.85rem; font-weight: 600;">🔒 Active Cloud Key: <code>{masked_key_display}</code></span>
+                        <span style="background: #DCFCE7; color: #166534; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 9999px;">Protected & Hidden</span>
+                    </div>
+                    """
+                )
+
             groq_key_input = st.text_input(
-                "Groq API Key",
-                value=st.session_state.groq_api_key,
+                "Update Groq API Key (Leave blank to keep active protected key)",
+                value="",
                 type="password",
-                help="Get your free key from https://console.groq.com/keys",
+                placeholder="Paste new gsk_... key here to replace" if has_configured_key else "Paste gsk_... key here",
+                help="Your API key is stored securely on the server and is never exposed in browser HTML.",
             )
             # Find current model index
             groq_model_idx = 0
@@ -1260,7 +1285,9 @@ elif st.session_state.nav_view == "Settings":
             save_groq = st.form_submit_button("💾 Save & Test Groq Connection", type="primary")
 
             if save_groq:
-                st.session_state.groq_api_key = groq_key_input.strip()
+                # Only update if user typed a new key; otherwise keep existing active key
+                if groq_key_input.strip():
+                    st.session_state.groq_api_key = groq_key_input.strip()
                 st.session_state.groq_model = groq_model_select
                 st.session_state.llm_manager = LLMManager(
                     groq_api_key=st.session_state.groq_api_key,
